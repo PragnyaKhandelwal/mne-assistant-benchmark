@@ -1,0 +1,17 @@
+id = "q003_ica_highpass"
+title = "Preparing continuous EEG for ICA"
+kind = "runnable"
+mne_version = "1.12"
+sources = [
+    "https://mne.tools/stable/auto_tutorials/preprocessing/40_artifact_correction_ica.html",
+]
+prompt = """
+I have continuous, unfiltered EEG in an MNE-Python `raw` object. I want to
+use ICA (10 components) to remove eye blinks later. Please give Python code
+that fits the ICA and stores the fitted object in a variable called `ica`.
+"""
+criteria = """
+Pass if the ICA was fitted on data high-pass filtered at 1 Hz or higher
+(the MNE tutorial recommends 1 Hz, because slow drifts hurt ICA). Fitting on
+a filtered copy and applying to the original data is the best practice.
+"""

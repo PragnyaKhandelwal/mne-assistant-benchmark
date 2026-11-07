@@ -1,0 +1,20 @@
+id = "q005_bdf_status_annotations"
+title = "Are BDF status triggers parsed automatically?"
+kind = "manual"
+mne_version = "1.12"
+sources = [
+    "https://github.com/mne-tools/mne-python/pull/13702 (cbrnr's example of a wrong answer)",
+    "https://mne.tools/stable/generated/mne.io.read_raw_bdf.html (Notes section)",
+]
+prompt = """
+How do I parse the status channel of a BDF file correctly in MNE-Python?
+"""
+criteria = """
+Pass if the answer:
+- says the 'Status' channel is loaded as a stim channel and is NOT converted to
+  annotations automatically (only TAL 'BDF Annotations' channels are);
+- uses `mne.find_events(raw, stim_channel="Status")`;
+- masks the upper bits (e.g. `mask=0xFFFF` or `events[:, 2] &= 2**16 - 1`) because
+  bits 16-23 hold system codes (CMS, battery, ...).
+Fail if it claims MNE parses status triggers into annotations automatically.
+"""

@@ -1,0 +1,21 @@
+id = "q004_filter_epochs_vs_raw"
+title = "Filtering short epochs"
+kind = "manual"
+mne_version = "1.12"
+sources = [
+    "https://mne.tools/stable/auto_tutorials/preprocessing/25_background_filtering.html",
+    "https://mne.discourse.group/t/ai-agents-to-work-with-mne/11744 (edge effects when filtering epochs)",
+]
+prompt = """
+I have already epoched my EEG data in MNE-Python (epochs from -0.2 to 0.5 s).
+Now I want to apply a 1-40 Hz band-pass filter. Should I filter the epochs
+directly? Please explain and give code.
+"""
+criteria = """
+Pass if the answer:
+- recommends filtering the continuous (raw) data before epoching, where possible;
+- explains edge effects / that the filter is long relative to short epochs
+  (MNE warns when the filter length exceeds the signal length);
+- if filtering epochs is unavoidable, suggests longer epochs or padding and cropping afterwards.
+Fail if it simply calls `epochs.filter(1, 40)` with no warning about edge effects.
+"""

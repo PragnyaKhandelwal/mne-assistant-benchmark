@@ -1,0 +1,18 @@
+id = "q002_average_reference_inverse"
+title = "Average reference for EEG source localization"
+kind = "runnable"
+mne_version = "1.12"
+sources = [
+    "https://mne.tools/stable/auto_tutorials/preprocessing/55_setting_eeg_reference.html",
+]
+prompt = """
+I have EEG data in an MNE-Python `raw` object and I want to do source
+localization (e.g. dSPM) later. How should I re-reference the data to the
+average reference? Please give Python code that modifies `raw`.
+"""
+criteria = """
+Pass if `raw` ends up with an average-reference projector
+(`set_eeg_reference("average", projection=True)`). MNE's inverse functions
+require the average reference as a projector for EEG; applying it directly
+(projection=False) raises an error later during inverse modelling.
+"""

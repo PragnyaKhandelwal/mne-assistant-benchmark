@@ -1,0 +1,22 @@
+id = "q001_status_channel_mask"
+title = "Extracting triggers from a BioSemi-style status channel"
+kind = "runnable"
+mne_version = "1.12"
+sources = [
+    "https://github.com/mne-tools/mne-python/pull/13702 (BDF status channel example)",
+    "https://mne.tools/stable/generated/mne.io.read_raw_bdf.html (Notes section)",
+]
+prompt = """
+I recorded EEG with a BioSemi system and loaded it with MNE-Python. The data
+are already in a variable called `raw`, and the trigger channel is called
+'Status'. My experiment sent trigger codes 1, 2 and 3, but when I extract
+events I get strange large values and extra events. How do I get the correct
+events? Please give Python code that stores the result in a variable called
+`events` (an MNE events array).
+"""
+criteria = """
+Pass if `events` contains exactly the four true triggers (codes 1, 2, 1, 3 at
+the right samples). Correct answers use `mne.find_events` with a `mask` (e.g.
+0xFF or 0xFFFF) or mask the upper bits by hand, because bits 16-23 of the
+status channel carry system codes, not triggers.
+"""
