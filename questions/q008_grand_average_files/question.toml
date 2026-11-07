@@ -1,0 +1,18 @@
+id = "q008_grand_average_files"
+title = "Grand average from per-participant evoked files"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/5170",
+    "https://mne.discourse.group/t/6284",
+]
+prompt = """
+I saved one evoked file per participant; `fnames` is a list of paths to these
+-ave.fif files (each contains a single condition). How do I compute the grand
+average across participants? Store it in `grand_avg`.
+"""
+criteria = """
+Pass if `grand_avg` is an Evoked equal to the average of all participants.
+Pitfalls: `mne.read_evokeds` returns a list unless `condition` is given, and the
+grand average must be computed once over a list of all participants' Evoked objects.
+"""

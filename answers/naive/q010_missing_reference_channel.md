@@ -1,0 +1,3 @@
+```python
+raw.set_eeg_reference("average")
+```

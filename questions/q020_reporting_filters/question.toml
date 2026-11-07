@@ -1,0 +1,18 @@
+id = "q020_reporting_filters"
+title = "Which filter settings to report in a paper"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/8408",
+]
+prompt = """
+I want to report my filter settings in a paper. The filter shown in `raw.plot()` says
+it's a 16th-order Butterworth, but I filtered my data with `raw.filter(0.1, 40)`.
+Which parameters should I report, and where do I find them?
+"""
+criteria = """
+Pass if the answer says the `raw.plot` filter is display-only and does not change the
+data, and that the parameters of `raw.filter` (FIR design, filter length, transition
+bandwidths, cutoffs, zero-phase) are what to report; they are printed in the log
+output, and the MNE filtering tutorial lists what to report.
+"""

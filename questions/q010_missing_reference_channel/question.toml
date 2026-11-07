@@ -1,0 +1,17 @@
+id = "q010_missing_reference_channel"
+title = "Average reference when the recording reference is not in the file"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/5789",
+]
+prompt = """
+My EEG was recorded with Cz as the reference, and Cz itself is not in the file. The
+data are in `raw`. I want to re-reference to the average of all electrodes. How do I
+do this correctly? Leave the result in `raw`.
+"""
+criteria = """
+Pass if Cz is added back (`mne.add_reference_channels(raw, "Cz")`) before setting
+the average reference, so the average includes the original reference electrode.
+Averaging without it gives a slightly wrong reference.
+"""

@@ -1,10 +1,11 @@
 id = "q004_filter_epochs_vs_raw"
 title = "Filtering short epochs"
 kind = "manual"
-mne_version = "1.12"
+mne_version = "1.13"
 sources = [
     "https://mne.tools/stable/auto_tutorials/preprocessing/25_background_filtering.html",
     "https://mne.discourse.group/t/ai-agents-to-work-with-mne/11744 (edge effects when filtering epochs)",
+    "https://mne.discourse.group/t/6453 (accepted answer is an IIR workaround without an edge-effect warning)",
 ]
 prompt = """
 I have already epoched my EEG data in MNE-Python (epochs from -0.2 to 0.5 s).

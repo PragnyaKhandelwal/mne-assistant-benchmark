@@ -1,0 +1,18 @@
+id = "q013_epochs_without_baseline"
+title = "Getting epoch data without baseline correction"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/4636",
+]
+prompt = """
+I created epochs with `epochs = mne.Epochs(raw, events, tmin=-0.2, tmax=0.5)`. When
+I call `epochs.get_data()` the DC offset of my channels is gone, but my analysis
+needs the data exactly as recorded, without baseline correction. How do I get it?
+Store the array in `data`.
+"""
+criteria = """
+Pass if `data` keeps the original DC offset. `mne.Epochs` applies a (None, 0)
+baseline by default; create the epochs with `baseline=None` to keep the data as
+recorded (baseline correction cannot be undone afterwards).
+"""

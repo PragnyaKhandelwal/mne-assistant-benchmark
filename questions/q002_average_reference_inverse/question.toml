@@ -1,9 +1,10 @@
 id = "q002_average_reference_inverse"
 title = "Average reference for EEG source localization"
 kind = "runnable"
-mne_version = "1.12"
+mne_version = "1.13"
 sources = [
     "https://mne.tools/stable/auto_tutorials/preprocessing/55_setting_eeg_reference.html",
+    "https://mne.discourse.group/t/8224",
 ]
 prompt = """
 I have EEG data in an MNE-Python `raw` object and I want to do source

@@ -1,0 +1,19 @@
+id = "q016_label_timecourse_mean_flip"
+title = "Extracting ROI time courses from dSPM estimates"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/11491",
+]
+prompt = """
+I computed dSPM source estimates for each participant and extract the average time
+course in a few labels with `mne.extract_label_time_course(stc, labels, src,
+mode="mean_flip")`. Some participants come out positive and others negative in the
+same label, which ruins my group average. What should I do?
+"""
+criteria = """
+Pass if the answer explains that for all-positive (magnitude) estimates such as dSPM
+with free orientation, `mode="mean"` is the right choice, because `mean_flip`'s
+orientation-based sign flips are meant for signed estimates. Fail if it only suggests
+taking the absolute value of the flipped result without explaining this.
+"""

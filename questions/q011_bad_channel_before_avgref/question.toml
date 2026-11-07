@@ -1,0 +1,16 @@
+id = "q011_bad_channel_before_avgref"
+title = "Noise spreading to all channels after average reference"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/9237",
+]
+prompt = """
+After setting an average reference on my EEG (`raw`), every channel shows the same
+large noisy fluctuations that weren't there before. What is going on, and how do I
+fix it? Give code that leaves `raw` correctly average-referenced.
+"""
+criteria = """
+Pass if the noisy channel (T7) is marked as bad (or dropped) before the average
+reference is computed, so its noise is not spread to every other channel.
+"""

@@ -1,0 +1,20 @@
+id = "q009_epoch_onsets_to_annotations"
+title = "Marking kept epochs back in the raw data"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/7040",
+]
+prompt = """
+After cleaning, I have `epochs` created from `raw` (some epochs were dropped). I want
+to mark where each remaining epoch starts in the original `raw` as annotations with
+the description 'kept', so I can see them in `raw.plot()`. How do I do this? Modify
+`raw` in place.
+"""
+criteria = """
+Pass if each 'kept' annotation lines up with the start of a remaining epoch.
+Pitfall: `epochs.events[:, 0]` already includes `raw.first_samp`; adding
+`raw.first_time` again shifts the annotations whenever first_samp is not 0 (the
+accepted forum answer works only for first_samp == 0). `mne.annotations_from_events`
+with `first_samp=raw.first_samp` handles this.
+"""

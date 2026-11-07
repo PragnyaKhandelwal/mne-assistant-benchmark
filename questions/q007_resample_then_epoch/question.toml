@@ -1,0 +1,20 @@
+id = "q007_resample_then_epoch"
+title = "Downsampling and epoching with an existing events array"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/2503",
+    "https://mne.discourse.group/t/6344",
+    "https://mne.discourse.group/t/9301",
+]
+prompt = """
+My EEG `raw` is sampled at 1000 Hz and I already extracted `events` with
+`mne.find_events`. I want to downsample to 250 Hz to save memory and then create
+epochs from -0.2 to 0.5 s around all events. Store the epochs in `epochs`.
+"""
+criteria = """
+Pass if all 20 epochs exist at 250 Hz and are correctly time-locked (the evoked
+peak stays at 100 ms). Correct approaches: epoch first and then decimate/resample
+the epochs, pass `events=` to `raw.resample`, or re-extract events after resampling.
+Reusing the original 1000 Hz `events` after resampling the raw data misplaces epochs.
+"""

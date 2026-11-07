@@ -1,9 +1,10 @@
 id = "q003_ica_highpass"
 title = "Preparing continuous EEG for ICA"
 kind = "runnable"
-mne_version = "1.12"
+mne_version = "1.13"
 sources = [
     "https://mne.tools/stable/auto_tutorials/preprocessing/40_artifact_correction_ica.html",
+    "https://mne.discourse.group/t/8737",
 ]
 prompt = """
 I have continuous, unfiltered EEG in an MNE-Python `raw` object. I want to

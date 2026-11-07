@@ -1,0 +1,17 @@
+id = "q023_psd_epoch_length"
+title = "Why the PSD changes with epoch length"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/4899",
+]
+prompt = """
+I computed the power spectrum of the same resting-state EEG once from 2-second epochs
+and once from 10-second epochs (and once from the continuous data). The spectra
+differ, especially at low frequencies. Is something wrong?
+"""
+criteria = """
+Pass if the answer explains that frequency resolution is about 1 / window length, so
+short epochs give poor low-frequency estimates, and that MNE uses different default
+estimators for raw (Welch) and epochs (multitaper), which also changes the result.
+"""

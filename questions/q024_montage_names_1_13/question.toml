@@ -1,0 +1,18 @@
+id = "q024_montage_names_1_13"
+title = "Setting a standard 10-20 montage (version awareness)"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://github.com/mne-tools/mne-python/pull/13903 (montages renamed in 1.13)",
+]
+prompt = """
+My EEG `raw` has channels named with the standard 10-20 system (Fp1, Fz, Cz, ...)
+but no electrode positions. How do I add template electrode positions so I can plot
+topomaps? Modify `raw` in place. I'm using MNE-Python 1.13.
+"""
+criteria = """
+Pass if a montage is set. In MNE 1.13 `standard_1020`/`standard_1005` were renamed
+(`colin27_1020`, `colin27_1005`; spherical and fsaverage variants also exist), so
+answers using the old names raise an error. Tests whether the assistant knows the
+current version.
+"""

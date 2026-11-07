@@ -1,0 +1,18 @@
+id = "q021_cluster_adjacency_none"
+title = "Adjacency in spatio-temporal cluster tests"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/6800",
+]
+prompt = """
+I run `mne.stats.spatio_temporal_cluster_1samp_test` on sensor-level data with shape
+(n_subjects, n_times, n_channels) and leave `adjacency=None`. How are clusters
+formed in that case, and is that OK?
+"""
+criteria = """
+Pass if the answer explains that `None` assumes a regular lattice along the last axis
+(each channel adjacent to the channels before and after it in array order), which is
+not meaningful for sensors, and that a real channel adjacency should be built
+(e.g. `mne.channels.find_ch_adjacency`).
+"""

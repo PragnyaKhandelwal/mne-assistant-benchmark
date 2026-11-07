@@ -1,0 +1,20 @@
+id = "q015_paired_cluster_test"
+title = "Cluster permutation test for two within-subject conditions"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/2514",
+    "https://mne.discourse.group/t/3530",
+]
+prompt = """
+I have 20 participants measured in two conditions. `X_a` and `X_b` are arrays of
+shape (n_subjects, n_times), one time course per participant and condition. I want a
+cluster-based permutation test over time for the within-subject difference. Store
+the observed statistic array in `t_obs` and the cluster p-values in `cluster_pv`.
+"""
+criteria = """
+Pass if the test is paired: the per-participant difference `X_a - X_b` is passed to
+`mne.stats.permutation_cluster_1samp_test` (which clusters across time; it does not
+permute across time). `permutation_cluster_test([X_a, X_b])` treats the conditions
+as independent groups. If a custom `stat_fun` is used, pass the function itself.
+"""

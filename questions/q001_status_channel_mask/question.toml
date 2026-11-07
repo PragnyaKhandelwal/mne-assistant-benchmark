@@ -1,7 +1,7 @@
 id = "q001_status_channel_mask"
 title = "Extracting triggers from a BioSemi-style status channel"
 kind = "runnable"
-mne_version = "1.12"
+mne_version = "1.13"
 sources = [
     "https://github.com/mne-tools/mne-python/pull/13702 (BDF status channel example)",
     "https://mne.tools/stable/generated/mne.io.read_raw_bdf.html (Notes section)",

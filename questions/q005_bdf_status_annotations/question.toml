@@ -1,7 +1,7 @@
 id = "q005_bdf_status_annotations"
 title = "Are BDF status triggers parsed automatically?"
 kind = "manual"
-mne_version = "1.12"
+mne_version = "1.13"
 sources = [
     "https://github.com/mne-tools/mne-python/pull/13702 (cbrnr's example of a wrong answer)",
     "https://mne.tools/stable/generated/mne.io.read_raw_bdf.html (Notes section)",

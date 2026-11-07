@@ -1,0 +1,19 @@
+id = "q018_tfr_long_epochs_rejection"
+title = "Artifact rejection with padded epochs for time-frequency analysis"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/11631",
+]
+prompt = """
+For time-frequency analysis I use long epochs (-1 to 2 s) to avoid edge effects, but
+my window of interest is only -0.2 to 0.8 s. Rejection on the full epoch drops many
+trials because of artifacts near the edges. Should I reject only within my window of
+interest (e.g. with reject_tmin / reject_tmax)?
+"""
+criteria = """
+Pass if the answer explains the trade-off: artifacts in the padding leak into the
+window of interest through the wavelet/filter support, so rejecting on the whole
+window is safer; compute the TFR on the long clean epochs and crop afterwards. A
+nuanced answer (depends on artifact type and wavelet length) is acceptable.
+"""

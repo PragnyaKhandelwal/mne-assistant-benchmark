@@ -1,0 +1,18 @@
+id = "q017_bad_annotations_source"
+title = "Are BAD annotations respected in source analysis?"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/11592",
+]
+prompt = """
+In my resting-state pipeline I manually annotate bad segments of continuous data
+before source reconstruction. Are these annotated segments excluded automatically
+when I compute covariance, epochs or source estimates in MNE-Python?
+"""
+criteria = """
+Pass if the answer says annotations whose description starts with "BAD" are excluded
+by default by functions with `reject_by_annotation=True` (e.g. Epochs,
+compute_raw_covariance), and other annotations are not. Bonus: notes that code working
+on raw arrays directly needs `reject_by_annotation` set explicitly.
+"""

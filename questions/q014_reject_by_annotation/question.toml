@@ -1,0 +1,16 @@
+id = "q014_reject_by_annotation"
+title = "Computing statistics on clean data only"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/3389",
+]
+prompt = """
+I marked noisy spans in `raw` with annotations whose descriptions start with 'BAD_'.
+I want the variance of each channel computed only from the clean data. Store a NumPy
+array of shape (n_channels,) in `variances`.
+"""
+criteria = """
+Pass if the BAD_ spans are excluded, e.g. `raw.get_data(reject_by_annotation="omit")`
+(or "NaN" with `np.nanvar`).
+"""

@@ -1,0 +1,18 @@
+id = "q019_fsaverage_template_montage"
+title = "EEG source localization with the fsaverage template"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/11887",
+]
+prompt = """
+I don't have MRIs for my participants, so I use fsaverage as a template for EEG
+source localization. When I plot the alignment, the electrodes don't line up with the
+head. What montage and transformation should I use? I'm using MNE-Python 1.13.
+"""
+criteria = """
+Pass if the answer uses electrode positions already in fsaverage space (in MNE 1.13
+the `fsaverage_1005` montage) together with `trans="fsaverage"`. In older versions
+`standard_1005` with `trans="fsaverage"` was the usual approach; an answer naming only
+old montage names for 1.13 should be marked as outdated.
+"""

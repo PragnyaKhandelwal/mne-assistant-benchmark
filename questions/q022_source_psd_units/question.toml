@@ -1,0 +1,16 @@
+id = "q022_source_psd_units"
+title = "Units of source-space PSD"
+kind = "manual"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/4358",
+]
+prompt = """
+I computed source-space power spectra with `mne.minimum_norm.compute_source_psd_epochs`
+using dSPM. What units should I put on the y-axis?
+"""
+criteria = """
+Pass if the answer says dSPM values are noise-normalized and therefore unitless,
+whereas method="MNE" gives current-density power (e.g. Am²/Hz or nAm²/Hz). Fail if
+it gives a physical unit for dSPM.
+"""

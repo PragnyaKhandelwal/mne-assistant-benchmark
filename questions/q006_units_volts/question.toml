@@ -1,0 +1,17 @@
+id = "q006_units_volts"
+title = "Units when building Epochs from a NumPy array"
+kind = "runnable"
+mne_version = "1.13"
+sources = [
+    "https://mne.discourse.group/t/5961",
+]
+prompt = """
+I have EEG epochs in a NumPy array `data` with shape (n_epochs, n_channels, n_times),
+exported from another program where the values are in microvolts. The channel names
+are in `ch_names` and the sampling rate in `sfreq`. How do I create an MNE Epochs
+object so that ERP plots show the right amplitudes? Store it in `epochs`.
+"""
+criteria = """
+Pass if the data are converted to volts (multiplied by 1e-6) before creating the
+EpochsArray. MNE stores all data in SI units; plots only convert for display.
+"""
