@@ -13,9 +13,10 @@ def setup():
     data = np.zeros((3, n_times))
     data[:2] = rng.standard_normal((2, n_times)) * 1e-5
     status = np.zeros(n_times)
-    # system bit 16 toggles on and off independently of the triggers
+    # system bit 16 toggles on and off independently of the triggers,
+    # once in the middle of a trigger pulse (as happens in real recordings)
     status[400:700] += 2**16
-    status[1000:1500] += 2**16
+    status[1285:1500] += 2**16
     for onset, code in zip(ONSETS, CODES):
         status[onset : onset + 10] += code
     data[2] = status
