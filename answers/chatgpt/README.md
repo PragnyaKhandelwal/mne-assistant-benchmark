@@ -14,3 +14,5 @@ Protocol notes (batch 1, q002-q010):
 - Where a reply gave several alternatives, `<id>.code.py` holds the block the reply
   itself recommends (e.g. q007 "second approach"); optional, conditional, plotting and
   inspection blocks are not run.
+
+Batch 2 (q011-q020): fresh chat per question (protocol followed).
