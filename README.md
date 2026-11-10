@@ -46,12 +46,26 @@ line breaks lost when copying is fine), and note each selection in that assistan
 `answers/reference/` holds correct answers and `answers/naive/` common
 mistakes; together they check that the checks themselves work.
 
-## Status
+## Status and results
 
-Pilot. Questions are drawn from MNE documentation, GitHub discussions and the
-MNE Forum, and each one should be reviewed by someone familiar with the topic
-before results are reported. Doc pages that confuse assistants are tracked
-as a by-product, so the docs can be improved for human readers too.
+Pilot, run in November 2026 against three free assistants (one attempt per question):
+
+| | Gemini Flash Lite | Claude Sonnet 5.5 | ChatGPT (free) |
+|---|---|---|---|
+| Passed (of 24) | 17 | 18 | 14 |
+
+Full tables, observations and limitations: [RESULTS.md](RESULTS.md).
+Documentation pages the failures point to: [doc_findings.md](doc_findings.md).
+Issues found in the questions themselves: [NOTES.md](NOTES.md).
+
+Questions are drawn from MNE documentation, GitHub discussions and the MNE Forum
+(paraphrased, with links to the source threads). Forum text itself is not stored here.
+
+## How this was built
+
+The questions, checks and scoring script were drafted with help from Claude Code
+and reviewed by the author. Because Claude is also one of the assistants tested,
+the manual grades are listed with reasons so they can be checked independently.
 
 ## License
 
