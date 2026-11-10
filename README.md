@@ -48,13 +48,15 @@ mistakes; together they check that the checks themselves work.
 
 ## Status and results
 
-Pilot, run in November 2026 against three free assistants (one attempt per question):
+Pilot, run in November 2026 against three free assistants (Gemini Flash Lite,
+Claude Sonnet 5.5, ChatGPT free), one attempt per question. The main findings are failure
+patterns shared by all three (for example, the MNE 1.13 montage rename caused 7 of 23
+failures), not a ranking: score differences are within run-to-run variation.
 
-| | Gemini Flash Lite | Claude Sonnet 5.5 | ChatGPT (free) |
-|---|---|---|---|
-| Passed (of 24) | 17 | 18 | 14 |
+**Help wanted:** the hand-graded questions are provisional and have not been reviewed
+independently. If you know MNE, please grade them blind: [GRADING.md](GRADING.md).
 
-Full tables, observations and limitations: [RESULTS.md](RESULTS.md).
+Findings, scores, decisions that affected scores, and limitations: [RESULTS.md](RESULTS.md).
 Documentation pages the failures point to: [doc_findings.md](doc_findings.md).
 Issues found in the questions themselves: [NOTES.md](NOTES.md).
 
@@ -63,9 +65,10 @@ Questions are drawn from MNE documentation, GitHub discussions and the MNE Forum
 
 ## How this was built
 
-The questions, checks and scoring script were drafted with help from Claude Code
-and reviewed by the author. Because Claude is also one of the assistants tested,
-the manual grades are listed with reasons so they can be checked independently.
+The questions, checks and scoring script were drafted with help from Claude Code,
+and the hand grades were suggested by it. Because Claude is also one of the assistants
+tested, every decision that affected scores is listed in RESULTS.md, and the hand grades
+are open for blind, independent grading.
 
 ## License
 

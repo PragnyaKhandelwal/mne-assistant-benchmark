@@ -1,15 +1,66 @@
-# Pilot results (November 2026)
+# Pilot results (November 2026, provisional)
 
-24 questions, 3 assistants, one attempt per question in a fresh chat, no follow-ups.
+24 questions, 3 free assistants, one attempt per question in a fresh chat, no follow-ups,
 MNE-Python 1.13. Discussion: https://github.com/mne-tools/mne-python/issues/14428
 
-| Assistant | Model | Plan |
-|---|---|---|
-| Gemini (web) | Gemini Flash Lite | free, not logged in |
-| Claude (claude.ai) | Claude Sonnet 5.5 | free account |
-| ChatGPT (web) | not shown in the free UI | free, logged in, Temporary Chat, Think off |
+**Status:** the 13 automatically checked results are reproducible with `run.py`. The 11
+hand-graded results are **provisional suggestions** that have not yet been reviewed by
+anyone independent; see [GRADING.md](GRADING.md) to help.
 
-## Summary
+## Who did what
+
+| Step | Done by |
+|---|---|
+| Choosing forum threads and writing questions, checks and criteria | the author, with help from Claude Code |
+| Collecting replies from each assistant (web interfaces) | the author |
+| Automatic scoring (13 questions) | `run.py`: runs each reply's code on synthetic data |
+| Hand grading (11 questions) | suggested by Claude Code, not yet independently reviewed |
+
+Claude (Sonnet 5.5) is one of the assistants tested, and Claude Code is also a Claude
+model, so the hand grades and the design of the checks could favour Claude. The decisions
+below are listed so they can be checked.
+
+## Decisions that changed scores
+
+- **q009 check:** the synthetic data were given a measurement date, as in real recordings.
+  This turned two replies (Gemini, ChatGPT, earlier runs) from PASS to FAIL and left
+  Claude's PASS; their code shifts annotations whenever a date is set. Verified with a
+  separate script, but worth re-checking.
+- **q001 check:** one system-bit change now starts in the middle of a trigger pulse, so
+  masking *after* `find_events` fails. This affected one ChatGPT code block.
+- **Code selection:** when a reply contained several alternative code blocks, the block the
+  reply itself recommends was run; ChatGPT code that lost its line breaks when copied was
+  re-formatted without changing any statement. Each case is listed in
+  `answers/<assistant>/README.md`.
+- **q011 and q023:** graded by hand / on a reduced criterion because of question-design
+  problems ([NOTES.md](NOTES.md)).
+- **Strict vs lenient grading** (definition in GRADING.md): changes 3 grades.
+
+## Shared failure patterns
+
+These are the main findings; they do not depend on which assistant "wins".
+
+1. **The MNE 1.13 montage rename** (`standard_1020` / `standard_1005`) accounts for 7 of the
+   23 failures. All three fail q024 even though the prompt says "MNE-Python 1.13", and all
+   three recommend `standard_1005` for fsaverage (q019).
+2. **Recent topics are harder.** Pass rate on 2024-26 vs 2021-23 forum topics: 67% vs 82%
+   (Gemini), 78% vs 82% (Claude), 33% vs 73% (ChatGPT). Small samples; a trend only.
+3. **Known forum pitfalls still appear:** reusing the original events after resampling
+   (2 of 3, q007) and fitting ICA on unfiltered data (1 of 3, q003).
+4. **No assistant answered q016** (`mean_flip` on all-positive dSPM estimates, a 2025 topic).
+5. **Non-existent or misplaced API**, checked against the MNE source:
+   `Raw.set_eeg_reference(copy=...)`, `raw.get_eeg_reference()`, `uint_cast` passed to
+   `read_raw_bdf`.
+6. **Confident wrong claims about MNE behaviour:** `adjacency=None` described as fully
+   connected, BAD-annotation matching described as case-sensitive, `apply_inverse_raw`
+   said to skip BAD spans.
+
+Doc pages these point to: [doc_findings.md](doc_findings.md).
+
+## Scores
+
+The differences between assistants are small compared with the run-to-run variation seen
+in this pilot (see Limitations), so **the scores should not be read as a ranking**.
 
 | Group | Gemini | Claude | ChatGPT |
 |---|---|---|---|
@@ -17,16 +68,22 @@ MNE-Python 1.13. Discussion: https://github.com/mne-tools/mne-python/issues/1442
 | Older forum topics, 2021-23 (11) | 9 | 9 | 8 |
 | Known pitfalls from docs/GitHub (3) | 2 | 2 | 3 |
 | Version awareness, MNE 1.13 (1) | 0 | 0 | 0 |
-| **Total (24)** | **17** | **18** | **14** |
+| **Total, strict rule (24)** | **17** | **18** | **14** |
+| Total, lenient rule (24) | 18 | 18 | 16 |
 
 Groups: recent = q002, q003, q011, q012, q016-q020; older = q006-q010, q013-q015,
 q021-q023; pitfalls = q001, q004, q005; version = q024.
 
+| Assistant | Model | Plan |
+|---|---|---|
+| Gemini (web) | Gemini Flash Lite | free, not logged in |
+| Claude (claude.ai) | Claude Sonnet 5.5 | free account |
+| ChatGPT (web) | not shown in the free UI | free, logged in, Temporary Chat, Think off |
+
 ## Per question
 
-R = runnable (code executed against synthetic data and checked automatically),
-M = graded by hand against the criteria in `questions/<id>/question.toml`.
-⚠ = borderline manual grade (see below).
+R = automatic (code executed and checked), M = hand-graded (provisional).
+⚠ = borderline; the grade depends on strict vs lenient grading or on a judgement call.
 
 | # | Question | Type | Gemini | Claude | ChatGPT |
 |---|---|---|---|---|---|
@@ -56,26 +113,17 @@ M = graded by hand against the criteria in `questions/<id>/question.toml`.
 | q024 | Standard montage in MNE 1.13 | R | FAIL | FAIL | FAIL |
 
 \* q011 is runnable, but every reply used a placeholder channel name or file path, so it
-was graded by hand on the concept; q023 was graded on its generic criterion only. Both are
-question-design issues, described in [NOTES.md](NOTES.md).
+was graded by hand on the concept; q023 was graded on its generic criterion only.
 
-One-line reasons for every manual grade are in `answers/<assistant>/manual_grades.md`,
-and the raw replies are in `answers/<assistant>/<id>.md`.
-
-## Grading rule and borderline cases
-
-Manual grades use a **strict** rule: a reply that makes a wrong, definite claim about
-the thing asked fails, even if it also gives the right answer elsewhere. Under a
-**lenient** rule (main recommendation only), ChatGPT q017 and q021 and Gemini q005 would
-pass (Gemini 18, ChatGPT 16). Borderline cases:
+## Borderline cases
 
 - **Gemini q005, Claude q005:** correct masking code, but neither says that the Status
   channel is not converted to annotations (criterion 1). Claude also places `uint_cast`
   on `read_raw_bdf` (it belongs to `find_events`).
-- **Claude q017:** correct overall, but says BAD matching is case-sensitive
-  (MNE uses `descr.lower().startswith("bad")`).
-- **ChatGPT q017:** correct table, then states that `apply_inverse_raw` skips BAD spans by
-  default; it has no such option.
+- **Claude q017 vs ChatGPT q017 (judgement call):** both contain a factual error. Claude's
+  (BAD matching "case-sensitive") was treated as a side detail and passed; ChatGPT's
+  (`apply_inverse_raw` skips BAD spans) concerns the thing asked and failed. This call
+  favours Claude and should be checked independently.
 - **ChatGPT q018:** recommends rejecting only within the window of interest; leakage
   appears only as a caveat.
 - **ChatGPT q020:** says MNE's default is FIR, but its table lists Butterworth/IIR as what
@@ -83,33 +131,14 @@ pass (Gemini 18, ChatGPT 16). Borderline cases:
 - **ChatGPT q021:** opens with "all channels are spatially connected", then correctly
   explains the index-order lattice.
 
-## Observations
-
-1. **Recent topics are harder.** Pass rate on recent vs older forum topics: Gemini 67% vs
-   82%, Claude 78% vs 82%, ChatGPT 33% vs 73%. Small samples, so a trend rather than a result.
-2. **The MNE 1.13 montage rename accounts for 7 of the 23 failures.** All three fail q024
-   even though the prompt says "MNE-Python 1.13", all three recommend `standard_1005` for
-   fsaverage (q019), and Claude's otherwise correct q010 crashes on `standard_1020`.
-3. **Known forum pitfalls still appear:** reusing the original events after resampling
-   (Gemini and ChatGPT, q007) and fitting ICA on unfiltered data (ChatGPT, q003).
-4. **No assistant answered q016** (`mean_flip` on all-positive dSPM estimates), a 2025
-   forum topic.
-5. **Non-existent or misplaced API**, checked against the MNE source:
-   `Raw.set_eeg_reference(copy=...)` (Gemini q010), `raw.get_eeg_reference()` (ChatGPT
-   q010), `uint_cast` in `read_raw_bdf` (Claude q005).
-6. **Confident wrong claims about MNE behaviour:** `adjacency=None` as "fully connected"
-   (Claude q021), case-sensitive BAD matching (Claude q017), `apply_inverse_raw` skipping
-   BAD spans (ChatGPT q017).
+One-line reasons for every hand grade are in `answers/<assistant>/manual_grades.md`, and
+the raw replies are in `answers/<assistant>/<id>.md`.
 
 ## Limitations
 
-- **One run per question.** Redoing q001-q010 in fresh chats changed five results
-  compared with an earlier shared-chat run (kept in git history). Answers vary between
-  runs; a future version should repeat each prompt several times.
-- **Small question set**, and the recent/older split is by forum post date, not by any
-  model's training cutoff.
-- **Grading and possible bias.** Manual grades were made by one person. The questions,
-  checks and suggested manual grades were drafted with help from Claude Code (a Claude
-  model), and Claude scored highest, so independent grading of the manual questions would
-  strengthen these results.
-- **Free tiers only**, with the model version not always visible (ChatGPT).
+- **One run per question.** Redoing q001-q010 in fresh chats changed five results compared
+  with an earlier shared-chat run (kept in git history), so single runs are noisy.
+- **Small question set**, and "recent" is defined by forum post date, not by any model's
+  training cutoff.
+- **Hand grades are not yet independent** (see "Who did what").
+- **Free tiers only**, and the model version is not always visible (ChatGPT).
