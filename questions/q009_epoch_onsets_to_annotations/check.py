@@ -1,3 +1,5 @@
+import datetime
+
 import numpy as np
 
 import mne
@@ -9,6 +11,8 @@ def setup():
     data = rng.standard_normal((2, 6000)) * 1e-6
     info = mne.create_info(["Cz", "Pz"], sfreq, "eeg")
     raw = mne.io.RawArray(data, info, first_samp=1000, verbose=False)
+    # real recordings carry a measurement date, which changes how onsets are interpreted
+    raw.set_meas_date(datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc))
     events = mne.make_fixed_length_events(raw, duration=5.0)
     epochs = mne.Epochs(raw, events, tmin=0, tmax=4.99, baseline=None, preload=True, verbose=False)
     epochs.drop([1, 4], verbose=False)

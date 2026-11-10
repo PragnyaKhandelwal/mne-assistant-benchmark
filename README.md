@@ -33,6 +33,16 @@ Paste each assistant reply unchanged into `answers/<name>/<id>.md`. Python
 code blocks are extracted and run in a fresh subprocess. The runner never
 calls a model API, so any assistant (hosted or local) can be tested.
 
+### Selecting the code to run
+
+Replies often contain several code blocks: the answer, optional extras, alternatives,
+or later steps. Running all of them in sequence can break a correct answer. When that
+happens, save the reply unchanged as `<id>.md` and put the code the reply itself
+presents as its main or recommended answer in `<id>.code.py` next to it; the runner
+uses that file instead. Never change statements inside the selected code (restoring
+line breaks lost when copying is fine), and note each selection in that assistant's
+`README.md`.
+
 `answers/reference/` holds correct answers and `answers/naive/` common
 mistakes; together they check that the checks themselves work.
 

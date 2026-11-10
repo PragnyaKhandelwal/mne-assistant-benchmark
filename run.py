@@ -12,6 +12,7 @@ print their grading criteria for a human to judge.
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -34,8 +35,9 @@ def load_questions():
 
 
 def extract_code(text):
-    blocks = re.findall(r"```(?:python|py)?[^\n]*\n(.*?)```", text, flags=re.S)
-    return "\n\n".join(blocks)
+    blocks = re.findall(r"```([^\n]*)\n(.*?)```", text, flags=re.S)
+    keep = ("", "python", "py", "python3")
+    return "\n\n".join(code for lang, code in blocks if lang.strip().lower() in keep)
 
 
 def run_one(qdir, answer_file):
@@ -44,13 +46,18 @@ def run_one(qdir, answer_file):
     import check
 
     ns = check.setup()
-    code = extract_code(Path(answer_file).read_text(encoding="utf-8"))
+    # <id>.code.py, if present, holds the code selected from the reply (see README)
+    override = Path(answer_file).with_suffix(".code.py")
+    if override.exists():
+        code = override.read_text(encoding="utf-8")
+    else:
+        code = extract_code(Path(answer_file).read_text(encoding="utf-8"))
     if not code.strip():
         return False, "no Python code block found in the answer"
     try:
         exec(compile(code, "<answer>", "exec"), ns)
     except Exception as exc:
-        return False, f"answer code raised {type(exc).__name__}: {exc}"
+        return False, f"answer code raised {type(exc).__name__}: {str(exc)[:160]}"
     return check.check(ns)
 
 
@@ -69,6 +76,7 @@ def score(answers_dir):
             capture_output=True,
             text=True,
             timeout=TIMEOUT,
+            env={**os.environ, "MPLBACKEND": "agg", "MNE_BROWSER_BACKEND": "matplotlib"},
         )
         try:
             passed, msg = json.loads(proc.stdout.strip().splitlines()[-1])
