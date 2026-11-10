@@ -16,3 +16,4 @@ Protocol notes (batch 1, q002-q010):
   inspection blocks are not run.
 
 Batch 2 (q011-q020): fresh chat per question (protocol followed).
+Batch 3 (q021-q024): fresh chat per question.

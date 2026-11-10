@@ -11,6 +11,9 @@ Grades marked *suggested* were drafted by Claude Code against each question's cr
 | q018_tfr_long_epochs_rejection | PASS (suggested) | Explains wavelet leakage and widens the rejection window by the wavelet half-width. |
 | q019_fsaverage_template_montage | FAIL (suggested, outdated) | Recommends `standard_1005`; says it can't verify 1.13 specifics (honest, still outdated). |
 | q020_reporting_filters | PASS (suggested) | Display-only point; exact FIR defaults (-6 dB edges, 0.1/10 Hz transitions, 33 s at 1 kHz, ripple/attenuation). |
+| q021_cluster_adjacency_none | FAIL (suggested) | Wrong core claim: says `adjacency=None` makes channels "fully connected"; the docstring says regular lattice along the last axis. Recommendation to use `find_ch_adjacency` is right. |
+| q022_source_psd_units | PASS (suggested) | Dimensionless dSPM²/Hz; (A·m)²/Hz for method="MNE". |
+| q023_psd_epoch_length | PASS (suggested, criterion 2 n/a) | 1/T resolution, leakage, variance; asks which toolbox was used. |
 
 ## Quality notes on automatic questions
 - q001: 8-bit mask (0xFF) — fine here, would drop codes > 255 on 16-bit trigger setups.

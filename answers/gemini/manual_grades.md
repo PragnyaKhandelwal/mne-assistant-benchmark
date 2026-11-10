@@ -11,6 +11,9 @@ Grades marked *suggested* were drafted by Claude Code against each question's cr
 | q018_tfr_long_epochs_rejection | PASS (suggested) | Explains leakage into the window (worse at low frequencies) and suggests a buffered rejection window. |
 | q019_fsaverage_template_montage | FAIL (suggested, outdated) | Recommends `standard_1005` + trans="fsaverage"; in 1.13 that montage no longer exists (tutorial uses `fsaverage_1005`). Also links a YouTube video. |
 | q020_reporting_filters | PASS (suggested) | Plot filter is display-only; report FIR/firwin/Hamming/zero-phase, transition bands, length; found in the log. |
+| q021_cluster_adjacency_none | PASS (suggested) | Correct: regular lattice by array order along the channel axis; build adjacency with `find_ch_adjacency`. |
+| q022_source_psd_units | PASS (suggested) | dSPM is dimensionless (dSPM²/Hz); method="MNE" gives Am²/Hz. |
+| q023_psd_epoch_length | PASS (suggested, criterion 2 n/a) | Explains 1/T resolution and leakage. Does not mention MNE's Welch-vs-multitaper defaults, but the prompt never says MNE (see NOTES.md). |
 
 ## Quality notes on automatic questions
 - q002: reply also contains a conditional block using `standard_1020` (would error in 1.13); main block scored.

@@ -16,6 +16,7 @@ import os
 import re
 import subprocess
 import sys
+import textwrap
 import tomllib
 from pathlib import Path
 
@@ -37,7 +38,10 @@ def load_questions():
 def extract_code(text):
     blocks = re.findall(r"```([^\n]*)\n(.*?)```", text, flags=re.S)
     keep = ("", "python", "py", "python3")
-    return "\n\n".join(code for lang, code in blocks if lang.strip().lower() in keep)
+    # dedent: code blocks nested in markdown lists are indented
+    return "\n\n".join(
+        textwrap.dedent(code) for lang, code in blocks if lang.strip().lower() in keep
+    )
 
 
 def run_one(qdir, answer_file):

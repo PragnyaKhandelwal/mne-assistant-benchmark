@@ -11,6 +11,9 @@ Grades marked *suggested* were drafted by Claude Code against each question's cr
 | q018_tfr_long_epochs_rejection | FAIL (suggested, borderline) | Recommends rejecting only within -0.2..0.8 s as the primary approach; leakage appears only as a caveat. |
 | q019_fsaverage_template_montage | FAIL (suggested, outdated) | Recommends `standard_1005`, citing 1.3.1 docs. |
 | q020_reporting_filters | FAIL (suggested, borderline) | Says MNE's default is FIR, but its own table lists Butterworth/IIR and "zero-phase for IIR" as what to report; hedges on whether the plot filter is display-only. |
+| q021_cluster_adjacency_none | FAIL (suggested, borderline) | Opens with the wrong claim ("all channels are spatially connected"), then correctly explains the index-order lattice. Self-contradiction rule (NOTES.md). |
+| q022_source_psd_units | PASS (suggested) | dSPM²/Hz, not a physical unit. |
+| q023_psd_epoch_length | PASS (suggested, criterion 2 n/a) | 1/T resolution, cycles per window, leakage; ends with an interactive form. |
 
 ## Quality notes on automatic questions
 - q006: concept correct (µV → V) but crashes on MNE 1.13: `info.set_montage('standard_1020')` inside the main code.
