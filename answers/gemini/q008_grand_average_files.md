@@ -1,15 +1,19 @@
+To compute the grand average across participants in MNE-Python, you need to read the `Evoked` object from each file in your `fnames` list and pass them into `mne.grand_average()`.
+
+Here is how you can do it:
+
 ```python
 import mne
 
-# 1. Read the Evoked object from each participant's file
-evokeds = [mne.read_evokeds(fname)[0] for fname in fnames]
+# Load the single-condition Evoked object from each participant's file
+evokeds = [mne.read_evokeds(fname, verbose=False)[0] for fname in fnames]
 
-# 2. Compute the grand average across all participants
+# Compute the grand average
 grand_avg = mne.grand_average(evokeds)
 
 ```
 
-### Key Notes
+### Key Details:
 
-* **List indexing (`[0]`):** `mne.read_evokeds()` returns a list of `Evoked` objects (even when a file contains only one condition). Indexing `[0]` extracts the single `Evoked` instance per subject into a clean list.
-* **Equalizing channels:** `mne.grand_average()` automatically handles channel alignment across participants, dropping any channels that are not present in all datasets.
+* **`mne.read_evokeds(fname)`** always returns a list of `Evoked` objects (even if the file contains only one condition), which is why indexing with `[0]` is used.
+* **`mne.grand_average(evokeds)`** computes the grand average across the list of loaded `Evoked` instances, automatically handling weighting if participant trial counts differ (unless specified otherwise).

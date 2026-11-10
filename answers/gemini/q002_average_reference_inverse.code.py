@@ -1,3 +1,5 @@
 import mne
 
-raw.set_eeg_reference("average", projection=True)
+raw.load_data()
+
+raw.set_eeg_reference(ref_channels='average', projection=False)

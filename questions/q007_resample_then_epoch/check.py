@@ -25,6 +25,7 @@ def check(ns):
     epochs = ns.get("epochs")
     if not isinstance(epochs, mne.BaseEpochs):
         return False, "no Epochs object in `epochs`"
+    epochs.drop_bad(verbose=False)  # length is unknown until bad epochs are dropped
     if round(epochs.info["sfreq"]) != 250:
         return False, f"epochs are at {epochs.info['sfreq']} Hz, not 250 Hz"
     if len(epochs) != len(ONSETS):

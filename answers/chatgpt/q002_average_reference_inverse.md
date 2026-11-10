@@ -1,45 +1,58 @@
-For EEG source localization with MNE-Python (e.g., dSPM), the recommended approach is to use an average reference projector rather than immediately modifying the data.
+For EEG source localization with MNE-Python (e.g., minimum-norm estimation or dSPM), you should generally use an average reference.
 
-Use:
+MNE provides a direct method for this: `raw.set_eeg_reference('average')`.
 
-```
-raw.set_eeg_reference('average', projection=True)
-```
-
-This adds an average-reference projector to `raw` without immediately changing the EEG samples. It also allows MNE to account for the reference when constructing the inverse operator.
-
-### Recommended complete code
+### Python code
 
 ```
-# Mark bad EEG channels before adding the average reference# (if you haven't already done so)raw.info['bads'] = ['EEG 001']  # Replace with your actual bad channels# Add average EEG reference as a projectorraw.set_eeg_reference(ref_channels='average', projection=True)# Check that the projector was addedprint(raw.info['projs'])
+import mne# Apply average reference directly to the Raw objectraw.set_eeg_reference(ref_channels='average', projection=False)
 ```
 
-If you have already marked bad channels, don't overwrite `raw.info['bads']`.
+This modifies `raw` in place.
 
-### Should you call `raw.apply_proj()`?
-
-Not necessarily. You can leave the projector unapplied:
+However, for your specific goal of dSPM/source localization, I recommend using an average-reference projector instead:
 
 ```
-# Optional: explicitly apply all pending projectorsraw.apply_proj()
+import mne# Add an average EEG reference projectorraw.set_eeg_reference(ref_channels='average', projection=True)
 ```
 
-For source localization, I recommend keeping the average reference as a projector and allowing MNE to handle it consistently during source estimation.
+Recommended for dSPM
+
+### Why use `projection=True`?
+
+MNE specifically recommends this approach for EEG source imaging because:
+
+- The average reference is applied as a projector rather than immediately modifying the signal.
+- It adapts if you subsequently mark channels as bad or drop channels.
+- It ensures compatibility with MNE's EEG inverse modeling workflow.&#x20;
+
+  [image](https://www.google.com/s2/favicons?domain=https://mne.tools\&sz=32)
+
+  MNE 1.13.2 documentation+1
+
+
 
 ### Important considerations
 
-1. Bad channels: Mark bad EEG channels before creating the reference. They will be excluded from the average.
-2. Electrode positions: Make sure your EEG montage and electrode positions are correctly specified before computing the forward solution.
-3. Covariance: Use a consistent projector configuration when computing the noise covariance and inverse operator.
+1. Mark bad EEG channels before creating the projector:
+   ```
+   raw.info['bads'] = ['EEG 001']  # Replace with your bad channel namesraw.set_eeg_reference('average', projection=True)
+   ```
+2. You can inspect the projector:
+   ```
+   print(raw.info['projs'])
+   ```
+3. MNE will handle applying the projector during subsequent processing where appropriate. You can also explicitly apply it:
+   ```
+   raw.apply_proj()
+   ```
 
-Bottom line: For EEG dSPM source localization, use:
+My recommendation: Use `projection=True` rather than `projection=False` if you intend to perform EEG source localization with dSPM. Also ensure that your original acquisition reference electrode is represented appropriately in the data, as this can affect average referencing.&#x20;
 
-```
-raw.set_eeg_reference('average', projection=True)
-```
+[image](https://www.google.com/s2/favicons?domain=https://github.com\&sz=32)
 
-This is the approach explicitly recommended in the [official MNE-Python documentation on EEG referencing](https://mne.tools/stable/auto_tutorials/preprocessing/55_setting_eeg_reference.html?utm_source=chatgpt.com).&#x20;
+GitHub+1
 
-[image](https://www.google.com/s2/favicons?domain=https://mne.tools\&sz=32)
 
-MNE 1.13.2 documentation+1
+
+Documentation: [MNE-Python: Setting the EEG reference](https://mne.tools/stable/auto_tutorials/preprocessing/55_setting_eeg_reference.html?utm_source=chatgpt.com).

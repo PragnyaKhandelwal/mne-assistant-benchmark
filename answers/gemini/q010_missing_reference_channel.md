@@ -1,24 +1,21 @@
-To re-reference to the average correctly when the recording reference electrode (`Cz`) was omitted from the channel list, you must first add `Cz` back as a zero-signal channel before computing the average reference.
+To correctly re-reference your EEG data to the average reference when the original reference electrode (`Cz`) is missing from the file, you must first **add `Cz` back as a zero-filled channel**.
 
-If you omit `Cz`, the average reference calculation will exclude a real channel location whose potential was $0\text{ V}$ during recording, introducing a spatial bias into your average voltage calculation.
+If you apply an average reference without adding `Cz` back first, the average will be calculated incorrectly (divided by $N$ channels instead of $N + 1$), biasing your data.
+
+Here is how to do this correctly in MNE-Python, leaving the result directly in `raw`:
 
 ```python
 import mne
 
-# 1. Add the missing reference channel back (initialized with 0 V)
-raw.add_reference_channels(ref_channels=["Cz"])
+# 1. Add Cz back as a zero-filled reference channel
+raw = mne.add_reference_channels(raw, ref_channels=['Cz'], copy=False)
 
-# 2. Set the montage so Cz gets standard 3D location coordinates
-montage = mne.channels.make_standard_montage("standard_1020")
-raw.set_montage(montage)
-
-# 3. Re-reference to the average reference in-place
-raw.set_eeg_reference("average")
+# 2. Re-reference to the average of all channels (including Cz)
+raw.set_eeg_reference(ref_channels='average', copy=False)
 
 ```
 
-### Key Considerations
+### Verification
 
-* **Montage Matching:** If your dataset uses a different electrode layout (e.g., `'standard_1005'`, `'biosemi32'`, etc.), specify that montage name in `make_standard_montage()`.
-* **Bad Channels:** Mark noisy channels (`raw.info['bads'] = ['EEG012', ...]`) before running `set_eeg_reference`. MNE automatically excludes bad channels from the average calculation.
-* **Source Localization:** If you plan to perform source estimation (e.g., dSPM) later, use `raw.set_eeg_reference("average", projection=True)` instead to store the average reference as a Signal Space Projection (SSP) operator.
+* **Check channel count:** Run `print(len(raw.ch_names))` before and after adding `Cz` to confirm that `Cz` has been successfully appended to the channel list.
+* **Check signal values:** Inspect `raw.get_data()` or plot a short segment (`raw.plot()`) to verify that `Cz` shows a valid signal after the average reference has been subtracted.

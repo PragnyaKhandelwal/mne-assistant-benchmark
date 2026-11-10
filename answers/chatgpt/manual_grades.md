@@ -3,8 +3,8 @@ Grades marked *suggested* were drafted by Claude Code against each question's cr
 
 | question | grade | why (one line) |
 |---|---|---|
-| q004_filter_epochs_vs_raw | PASS (suggested) | Opens with "Yes, you can", but recommends filtering raw, mentions edge artifacts, suggests longer epochs then crop. |
-| q005_bdf_status_annotations | PASS (suggested) | find_events with 16-bit mask and `uint_cast=True` (correct place); explicitly separates Status channel from BDF annotations. |
+| q004_filter_epochs_vs_raw | PASS (suggested) | Opens with "Yes, you can", but recommends filtering raw, warns about edge artifacts on 700 ms epochs, suggests longer epochs then crop. |
+| q005_bdf_status_annotations | PASS (suggested) | Masks the upper bits in find_events (recommended over masking afterwards) and separates the Status channel from BDF annotations. |
 | q011_bad_channel_before_avgref | PASS (suggested, concept) | Auto check crashed on example channel names (question-design issue, see NOTES.md). Concept right; correctly notes re-referencing again after marking bads also works. |
 | q016_label_timecourse_mean_flip | FAIL (suggested) | Suggests pick_ori="normal", morphing, pca_flip; never identifies `mode="mean"` for magnitude dSPM. Ends with an interactive form. |
 | q017_bad_annotations_source | FAIL (suggested, borderline) | Table is correct, but then claims `apply_inverse_raw` excludes BAD spans by default "as clarified by an MNE developer" — it has no such option, and this contradicts its own table. |
@@ -16,7 +16,8 @@ Grades marked *suggested* were drafted by Claude Code against each question's cr
 | q023_psd_epoch_length | PASS (suggested, criterion 2 n/a) | 1/T resolution, cycles per window, leakage; ends with an interactive form. |
 
 ## Quality notes on automatic questions
-- q006: concept correct (µV → V) but crashes on MNE 1.13: `info.set_montage('standard_1020')` inside the main code.
-- q009: subtracts first_samp and uses `orig_time=raw.annotations.orig_time` — shifts annotations whenever a measurement date is set.
-- q010: says missing Cz "is not a problem" — conceptually wrong.
-- Several replies cite MNE dev-build docs hosted on CircleCI artifacts (q004).
+- q001: masks before find_events, but via `astype(np.uint16)` (wraps values) and the private `raw._data`; calls the 24-bit Status channel "16-bit".
+- q003: fits ICA on unfiltered data with no mention of high-pass filtering.
+- q007: resamples raw and reuses the old events; then hesitates and suggests `events=events`, but never re-creates the epochs.
+- q010: says Cz does not need to be added back; also suggests `raw.get_eeg_reference()`, which does not exist.
+- q019, q024: outdated montage names for MNE 1.13.

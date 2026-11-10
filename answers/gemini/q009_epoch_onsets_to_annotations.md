@@ -1,27 +1,45 @@
-To mark the span of each remaining epoch as an annotation in `raw`, compute the onset times using `epochs.events` (which automatically excludes dropped epochs) and update `raw.annotations` in place.
+To mark the start of each remaining (kept) epoch as an annotations layer in your original `raw` object, you can extract the sample indices from `epochs.events`, convert them to seconds, create an `mne.Annotations` object, and add them to `raw` in place.
+
+Here is how you can do it:
 
 ```python
 import mne
+import numpy as np
 
-# 1. Compute onset times (in seconds) and durations for the kept epoch windows
-onsets = (epochs.events[:, 0] - raw.first_samp) / raw.info["sfreq"] + epochs.tmin
-durations = epochs.tmax - epochs.tmin
+# 1. Get the sample indices of the kept epochs
+event_samples = epochs.events[:, 0]
 
-# 2. Create an Annotations object for remaining epochs
-kept_annot = mne.Annotations(
+# 2. Convert sample indices to time in seconds (accounting for raw.first_samp)
+onsets = (event_samples - raw.first_samp) / raw.info["sfreq"]
+
+# 3. Define durations (0 for a point marker, or span the full epoch window)
+# Option A: Zero duration point markers at the epoch onset
+durations = np.zeros_like(onsets)
+
+# Option B (Alternative): Span the entire epoch duration from tmin to tmax
+# durations = np.full_like(onsets, epochs.tmax - epochs.tmin)
+# onsets = onsets + epochs.tmin  # Shift onset to the true start of the epoch window
+
+# 4. Create the Annotations object
+kept_annotations = mne.Annotations(
     onset=onsets,
     duration=durations,
-    description="kept",
-    orig_time=raw.info["meas_date"]
+    description=["kept"] * len(onsets)
 )
 
-# 3. Add to existing raw annotations and update raw in place
-raw.set_annotations(raw.annotations + kept_annot)
+# 5. Add them to raw in place (combining with any existing annotations)
+if raw.annotations is not None and len(raw.annotations) > 0:
+    raw.set_annotations(raw.annotations + kept_annotations)
+else:
+    raw.set_annotations(kept_annotations)
+
+# Now you can view them in the plot window
+raw.plot()
 
 ```
 
-### Key Details
+### Explanation:
 
-* **`epochs.events` filters dropped epochs automatically:** When epochs are dropped during cleaning, MNE removes their corresponding rows from `epochs.events`. Only surviving epochs remain.
-* **Accounting for `raw.first_samp` & `tmin`:** `epochs.events[:, 0]` contains sample indices relative to the start of file acquisition. Subtracting `raw.first_samp` converts this to continuous time within `raw`, and adding `epochs.tmin` aligns the annotation with the exact start of the epoch window.
-* **Shading epoch windows in `raw.plot()`:** Passing `duration = epochs.tmax - epochs.tmin` draws a colored box across the entire epoch duration in `raw.plot()` rather than displaying a single point marker.
+* **`epochs.events[:, 0]`**: When you drop bad epochs, `epochs.events` is automatically filtered to contain **only** the events corresponding to the remaining, accepted epochs.
+* **`raw.first_samp`**: Subtracting `raw.first_samp` ensures the time alignment is correct if your raw data file starts at a non-zero sample index.
+* **`raw.set_annotations(...)`**: Modifies the `raw` object in place. By adding `raw.annotations + kept_annotations`, you preserve any pre-existing annotations already present in your `raw` instance.

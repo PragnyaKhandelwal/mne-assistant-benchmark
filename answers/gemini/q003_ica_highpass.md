@@ -1,21 +1,29 @@
-To fit ICA reliably on continuous, unfiltered EEG, high-pass filter a **copy** of your data at 1.0 Hz first. ICA is extremely sensitive to low-frequency drifts; filtering a copy improves component separation without altering the original `raw` signal.
+Here is the Python code to initialize and fit an ICA object with 10 components on your MNE-Python `raw` object and store it in a variable called `ica`:
 
 ```python
 import mne
 from mne.preprocessing import ICA
 
-# 1. High-pass filter a copy of raw at 1 Hz to remove low-frequency drifts
-raw_ica = raw.copy().filter(l_freq=1.0, h_freq=None)
+# Initialize ICA with 10 components
+ica = ICA(n_components=10, random_state=97, max_iter='auto')
 
-# 2. Initialize ICA with 10 components
-ica = ICA(n_components=10, max_iter="auto", random_state=97)
-
-# 3. Fit ICA on the filtered copy (stores fitted ICA in `ica`)
-ica.fit(raw_ica)
+# Fit ICA to the raw data
+ica.fit(raw)
 
 ```
 
-### Why filter a copy first?
+### Important Best Practice
 
-* **Drifts degrade decomposition:** Unfiltered slow fluctuations (drifts below 1 Hz) dominate the signal's variance, causing ICA to waste components on drift artifacts rather than cleanly isolating eye blinks.
-* **Preserving low frequencies:** Fitting on `raw_ica` isolates the spatial unmixing matrix. When you are ready to remove blinks later, you run `ica.apply(raw)` on your original `raw` object, applying the learned spatial filters to your full-spectrum data without losing lower frequencies.
+Since you mentioned the EEG is unfiltered, **it is strongly recommended to apply a high-pass filter (typically 1 Hz)** before fitting ICA. Slow drifts and low-frequency artifacts can degrade ICA performance and make it difficult to reliably isolate eye blinks.
+
+If you want to filter your data first (saving the unfiltered data for later analysis), you can do:
+
+```python
+# Create a filtered copy just for fitting ICA
+raw_filtered = raw.copy().filter(l_freq=1.0, h_freq=None, n_jobs=None)
+
+# Fit ICA on the filtered data
+ica = ICA(n_components=10, random_state=97, max_iter='auto')
+ica.fit(raw_filtered)
+
+```

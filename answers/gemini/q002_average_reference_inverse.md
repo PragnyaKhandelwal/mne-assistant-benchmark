@@ -1,44 +1,32 @@
-```python
-import mne
-print(mne.__version__)
+To re-reference your MNE-Python `raw` object to the **average reference** (which is standard practice before computing a forward model and running source localization like dSPM), you can use the `set_eeg_reference()` method.
 
-
-```
-
-```text
-Traceback (most recent call last):
-  File "<xbox-string>", line 1, in <module>
-    import mne
-ModuleNotFoundError: No module named 'mne'
-
-
-```
+### Python Code
 
 ```python
 import mne
 
-# Set average reference as a projection operator (recommended for source localization)
-raw.set_eeg_reference("average", projection=True)
+# 1. (Optional but recommended) Ensure bad channels are marked,
+# as the average reference automatically excludes channels in raw.info['bads']
+# raw.info['bads'] = ['EEG024']  # example bad channel
+
+# 2. Ensure data is loaded into memory (required if projection=False)
+raw.load_data()
+
+# 3. Apply the average reference directly in-place
+raw.set_eeg_reference(ref_channels='average', projection=False)
 
 ```
 
-If your hardware used a specific scalp electrode as the recording reference (e.g., `'FCz'`) that was omitted from the channel array, add it back first before setting the average reference to avoid biasing the calculation:
+---
 
+### Important Best Practices for Source Localization:
+
+1. **Mark Bad Channels First:** The average reference calculates the mean across all good EEG channels. If you have noisy, dead, or bridging channels, **make sure to mark them in `raw.info['bads']**` *before* re-referencing, otherwise they will heavily skew your average reference.
+2. **Alternative (Using Projectors):** Instead of modifying the raw data array immediately, you can add the average reference as a Signal Space Projection (SSP):
 ```python
-# 1. Add the original reference channel back (if missing from raw)
-raw.add_reference_channels(ref_channels=["FCz"])
-
-# 2. Set montage (so the added channel gets 3D location coordinates)
-montage = mne.channels.make_standard_montage("standard_1020")
-raw.set_montage(montage)
-
-# 3. Add average reference projection
-raw.set_eeg_reference("average", projection=True)
+raw.set_eeg_reference(ref_channels='average', projection=True)
 
 ```
 
-### Key Considerations for Source Localization
 
-* **Use `projection=True`:** MNE's forward modeling (`make_forward_solution`) and inverse solvers (`make_inverse_operator` for dSPM/sLORETA) expect the average reference to be stored as a Signal Space Projection (SSP) operator in `raw.info['projs']`. This allows the inverse solver to incorporate the reference constraint directly into the gain/leadfield matrix.
-* **Mark Bad Channels First:** Set noisy or flat channels in `raw.info['bads'] = ['EEG012', ...]` prior to calling `set_eeg_reference`. MNE automatically excludes any channel marked as bad from the average reference operator.
-* **Applying the Projection:** The projector remains inactive until needed. If you want to force the projection directly onto the continuous signal data (e.g., for sensor-space plotting), run `raw.apply_proj()`.
+*Why use this?* MNE's covariance estimation and inverse operator functions will automatically apply active SSP projectors, leaving your raw time-series data un-subtracted until needed (which is useful if you want to keep the option to inspect un-referenced or alternative references later).

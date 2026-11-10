@@ -1,6 +1,67 @@
-For BioSemi `.bdf` files, the `Status` channel usually contains event trigger codes encoded as integers. In MNE-Python, the recommended approach is to read the BDF file with `stim_channel='auto'` and extract events using `mne.find_events()`.
+In MNE-Python, the correct way to parse the Status channel in a BioSemi BDF file is to load the file using `mne.io.read_raw_bdf()` and extract events using `mne.find_events()`.
 
-There is one important detail: BioSemi stores trigger codes in the lower 16 bits of the Status channel, while the upper bits can contain system information (such as CMS status). You may need to mask the trigger values to obtain the correct event codes.&#x20;
+There is an important detail: BioSemi stores trigger codes and system-status information in different bits of the Status channel. If you don't account for this, you may get unexpectedly large event values or incorrect trigger codes.
+
+## 1. Load the BDF file
+
+```
+import mneimport numpy as npbdf_file = "your_file.bdf"raw = mne.io.read_raw_bdf(    bdf_file,    preload=True,    stim_channel="auto")print(raw.ch_names)print(raw.get_channel_types())
+```
+
+By default, MNE recognizes channels named `Status` or `Trigger` (case-insensitive) as stimulus channels.
+
+## 2. Extract events from the Status channel
+
+Use `mne.find_events()`:
+
+```
+events = mne.find_events(    raw,    stim_channel="Status",    shortest_event=1,    verbose=True)print(events[:10])
+```
+
+The resulting array has three columns:
+
+| Column         | Meaning                   |
+| -------------- | ------------------------- |
+| `events[:, 0]` | Sample index of the event |
+| `events[:, 1]` | Previous trigger value    |
+| `events[:, 2]` | New trigger value         |
+
+For example:
+
+```
+[[  1024     0     1]
+ [  2048     0     2]
+ [  3072     0     3]]
+```
+
+## 3. Important: Remove BioSemi system-status bits
+
+This is probably the most important part.
+
+BioSemi uses a 24-bit Status channel:
+
+- Bits 1–16: Trigger/event codes.
+- Bits 17–24: System-status information (such as CMS and battery status).
+
+Consequently, MNE may return event values larger than your actual trigger codes.
+
+To extract only the trigger codes, use a 16-bit mask:
+
+```
+events = mne.find_events(    raw,    stim_channel="Status",    shortest_event=1,    mask=2**16 - 1,    mask_type="and")
+```
+
+This retains only the lower 16 bits.
+
+You can also apply the mask afterward:
+
+```
+events[:, 2] &= 0xFFFF
+```
+
+I recommend applying the mask directly in `mne.find_events()`.
+
+This behavior is documented in the [MNE-Python BDF reader documentation](https://mne.tools/stable/generated/mne.io.read_raw_bdf.html?utm_source=chatgpt.com).&#x20;
 
 [image](https://www.google.com/s2/favicons?domain=https://mne.tools\&sz=32)
 
@@ -8,77 +69,68 @@ MNE 1.13.2 documentation+1
 
 
 
-## 1. Read the BDF file correctly
+## 4. Get event IDs and their occurrences
+
+Once you have extracted the events:
 
 ```
-import mne# Read BDF fileraw = mne.io.read_raw_bdf(    'your_file.bdf',    preload=True,    stim_channel='auto')# Check channel names and typesprint(raw.ch_names)print(raw.get_channel_types())
+event_id = {    "condition_1": 1,    "condition_2": 2,    "condition_3": 3,}print(mne.event.count_events(    raw,    events=events))
 ```
 
-MNE automatically recognizes channels named `Status` or `Trigger` (case-insensitive) as stimulus channels.
-
-## 2. Extract events from the Status channel
+Alternatively, count occurrences directly:
 
 ```
-# Extract events, keeping only the lower 16 bitsevents = mne.find_events(    raw,    stim_channel='Status',    output='onset',    consecutive='increasing',    mask=2**16 - 1,    mask_type='and',    uint_cast=True)print(events[:10])
+unique, counts = np.unique(events[:, 2], return_counts=True)for event, count in zip(unique, counts):    print(f"Event {event}: {count} occurrences")
 ```
 
-The resulting `events` array has three columns:
+## 5. Create epochs
 
-| Column | Meaning                 |
-| ------ | ----------------------- |
-| 0      | Event sample number     |
-| 1      | Previous stimulus value |
-| 2      | Event trigger code      |
-
-## 3. Inspect the event codes
+You can now use the extracted events for epoching:
 
 ```
-import numpy as np# Print unique event codes and their frequenciesevent_codes, counts = np.unique(events[:, 2], return_counts=True)for code, count in zip(event_codes, counts):    print(f'Event code: {code}, Count: {count}')
+epochs = mne.Epochs(    raw,    events,    event_id=event_id,    tmin=-0.2,    tmax=0.8,    baseline=(None, 0),    preload=True)epochs.plot()
 ```
 
-You can also visualize the event distribution:
+## 6. If the event values are still incorrect
+
+There are a few things worth checking.
+
+A. Check the Status channel directly
 
 ```
-mne.viz.plot_events(    events,    sfreq=raw.info['sfreq'])
+status = raw.get_data(picks=["Status"])[0]print("Minimum:", status.min())print("Maximum:", status.max())print("Unique values:", np.unique(status)[:30])
 ```
 
-## 4. Create an event dictionary
+B. Check whether triggers are shifted by 8 bits
 
-Suppose your experiment uses the following trigger codes:
+Some synchronization systems encode triggers in shifted bit positions.
 
-```
-event_id = {    'Condition_1': 1,    'Condition_2': 2,    'Condition_3': 3,    'Condition_4': 4}
-```
-
-You can then create epochs:
+If your event codes appear to be multiples of 256, try:
 
 ```
-epochs = mne.Epochs(    raw,    events,    event_id=event_id,    tmin=-0.2,    tmax=0.5,    baseline=(-0.2, 0),    preload=True)
+events[:, 2] >>= 8
 ```
 
-## 5. Important: BDF Status channel versus BDF annotations
+Only do this if the acquisition/synchronization hardware confirms that the triggers are shifted.
 
-These are two different things:
+C. Check whether you are using annotations instead
 
-- Status channel: Contains numerical trigger codes. Use `mne.find_events()`.
-- BDF annotations: Contains textual event descriptions stored in the BDF annotation channel. MNE generally reads these into `raw.annotations`. Use `mne.events_from_annotations()` to extract events from them.&#x20;
+Some BDF files contain a `BDF Annotations` channel. MNE parses these automatically into `raw.annotations`.
 
-  [image](https://www.google.com/s2/favicons?domain=https://mne.tools\&sz=32)
-
-  MNE 1.13.2 documentation
-
-
-
-If you have both, inspect them separately to avoid missing events or counting the same experimental events twice.
-
-## My recommendation
-
-For a typical BioSemi EEG dataset, start with:
+You can extract those events separately:
 
 ```
-raw = mne.io.read_raw_bdf(    'your_file.bdf',    preload=True,    stim_channel='auto')events = mne.find_events(    raw,    stim_channel='Status',    mask=65535,    mask_type='and',    uint_cast=True)
+events, event_id = mne.events_from_annotations(raw)
 ```
 
-One question: Are you using a BioSemi ActiveTwo system (e.g., 32-, 64-, or 128-channel EEG)?
+Do not confuse annotation-based events with events encoded in the Status channel.
 
-This matters because BioSemi encodes trigger information in the Status channel, and occasionally the trigger values need additional bit shifting depending on the external trigger hardware.
+## Recommended complete implementation
+
+For a typical BioSemi EEG recording, I would start with this:
+
+```
+import mneimport numpy as np# Load BDFraw = mne.io.read_raw_bdf(    "your_file.bdf",    preload=True)# Extract trigger events (lower 16 bits)events = mne.find_events(    raw,    stim_channel="Status",    mask=0xFFFF,    mask_type="and",    shortest_event=1)# Inspect event codesunique, counts = np.unique(events[:, 2], return_counts=True)print("\nDetected events:")for code, count in zip(unique, counts):    print(f"Trigger {code}: {count} occurrences")# Inspect event timingprint("\nFirst 10 events:")print(events[:10])
+```
+
+One important question: Are you working with a BioSemi ActiveTwo recording, or a BDF file generated by another EEG acquisition system? The correct interpretation of the Status bits can depend on the acquisition hardware and trigger configuration.

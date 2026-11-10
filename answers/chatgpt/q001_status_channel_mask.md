@@ -1,73 +1,26 @@
-BioSemi systems store trigger information in the `Status` channel as a 16-bit digital word. MNE may interpret this as a combination of trigger bits, producing large values and extra events.
+BioSemi systems store trigger information in the `Status` channel as a 16-bit digital signal. MNE-Python may interpret this as a signed integer, which can produce large negative or unexpected trigger values. Additionally, BioSemi's trigger channel can contain extra bits that cause spurious events.
 
-For BioSemi data, the usual solution is to mask the Status channel to retain only the lower 8 bits before extracting events.
+The usual solution is to mask the lower 8 bits of the `Status` channel before extracting events.
 
 Use this code:
 
-python
-
-```python
-import mne
-
-# Extract events from the BioSemi Status channel
-events = mne.find_events(
-    raw,
-    stim_channel='Status',
-    output='onset',
-    consecutive=True,
-    shortest_event=1
-)
-
-# Keep only the lower 8 bits of the trigger values
-events[:, 2] &= 0xFF
-
-# Retain only your experimental trigger codes (1, 2, 3)
-events = events[events[:, 2] != 0]
-events = events[events[:, 2] <= 3]
-
-print(events)
 ```
-
-An important detail: For BioSemi, it is generally better to mask the trigger channel before event extraction, rather than after it. This avoids detecting spurious transitions caused by other bits in the Status channel.
-
-Here is the recommended approach:
-
-python
-
-```python
-import mne
-import numpy as np
-
-# Get the Status channel data
-status = raw.get_data(picks=['Status'])[0]
-
-# Mask to retain only the lower 8 bits
-status = np.bitwise_and(status.astype(np.int64), 0xFF)
-
-# Create a temporary stim channel
-raw_events = raw.copy()
-
-raw_events._data[raw_events.ch_names.index('Status')] = status
-
-# Extract events
-events = mne.find_events(
-    raw_events,
-    stim_channel='Status',
-    output='onset',
-    consecutive=True,
-    shortest_event=1
-)
-
-# Keep only trigger codes 1, 2 and 3
-events = events[np.isin(events[:, 2], [1, 2, 3])]
-
-print(events)
+import mneimport numpy as np# Get the Status channel datastatus = raw.get_data(picks=['Status'])[0]# Convert to unsigned 16-bit valuesstatus = status.astype(np.uint16)# Keep only the lower 8 bitsstatus = status & 0x00FF# Put the corrected trigger values back into the Raw objectraw._data[raw.ch_names.index('Status')] = status# Extract eventsevents = mne.find_events(    raw,    stim_channel='Status',    output='onset',    consecutive=True,    shortest_event=1)# Keep only your experimental trigger codes: 1, 2, and 3events = events[np.isin(events[:, 2], [1, 2, 3])]print(events)
 ```
 
 Why this works:
 
-- `0xFF` is a bitmask that retains the lower 8 bits.
-- `np.isin()` retains only your intended experimental trigger codes.
-- `events` remains a standard MNE events array with columns `[sample, previous_value, event_id]`.
+1. `astype(np.uint16)` handles the signed/unsigned representation of the BioSemi trigger values.
+2. `& 0x00FF` retains only the lower 8 bits, removing unwanted higher-bit information.
+3. `mne.find_events()` detects the trigger onsets.
+4. `np.isin()` retains only your experimental trigger codes (1, 2, and 3).
 
-One caveat: This assumes your experimental triggers are encoded in the lower 8 bits. If you still see unexpected values, inspect the raw Status values and confirm the trigger encoding before applying the mask.
+Important: This assumes your experimental trigger codes are encoded in the lower 8 bits. Also, modifying `raw._data` directly is an internal MNE operation; make a copy of `raw` first if you need to preserve the original data.
+
+If you still see unexpected events, inspect the unique values in the corrected trigger channel:
+
+```
+print(np.unique(status))
+```
+
+You should see values including 0, 1, 2, and 3, rather than large unexpected values.

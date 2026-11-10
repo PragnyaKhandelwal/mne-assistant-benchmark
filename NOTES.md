@@ -25,3 +25,9 @@ write-up can report them honestly.
   (applied to ChatGPT q017 and q021).
 - **Runner (fixed):** code blocks nested in markdown lists are indented; the runner now
   dedents them (Claude q024 had failed with an IndentationError before this).
+- **q007 check (fixed):** called `len(epochs)` on epochs that were not preloaded, which
+  MNE refuses; the check now drops bad epochs first.
+- **Run-to-run variation (limitation):** redoing q001-q010 in fresh chats changed several
+  results versus the earlier shared-chat run (Gemini q002/q007 PASS -> FAIL, q009 FAIL ->
+  PASS; ChatGPT q003 PASS -> FAIL, q006 FAIL -> PASS). Single runs are noisy; a later
+  version should repeat each prompt several times.

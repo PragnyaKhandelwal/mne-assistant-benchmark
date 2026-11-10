@@ -1,50 +1,56 @@
-**No**, you should not apply a 1–40 Hz band-pass filter directly to short epochs (-0.2 to 0.5 s).
+### Direct Answer
 
-Filtering short data segments—especially with a 1 Hz high-pass filter—introduces severe **edge artifacts and ringing** that distort the signals across your entire epoch window. High-pass filtering should almost always be performed on continuous data (`raw`) before epoching.
+**No, you should ideally not filter epoched data directly** if your continuous (Raw) data is available.
 
----
+In MNE-Python, the standard and recommended pipeline is to apply filters to the **Raw continuous data *before* creating epochs**.
 
-### Why filtering short epochs causes errors
-
-1. **Filter length exceeds epoch duration:** A standard linear-phase FIR filter with a 1.0 Hz high-pass cutoff requires a filter kernel duration of roughly 3.3 seconds to achieve a sharp transition band. Your epoch is only 0.7 seconds long (700 ms), meaning the filter is significantly longer than your data window.
-2. **Edge artifacts (ringing):** When MNE pads short epochs to apply the filter, the boundary steps cause transient ringing artifacts that spread across the entire -0.2 to 0.5 s range, destroying baseline accuracy and ERP shapes.
+Since your epochs are very short (`-0.2` to `0.5` seconds, totaling just 700 ms), filtering them directly—especially with a 1 Hz high-pass filter—will cause severe **edge artifacts (filter ringing)** that can corrupt a massive portion of your data window.
 
 ---
 
-### Recommended Workflow (Filter continuous `raw`, then epoch)
+### Why You Should Filter Raw Data Instead
 
-Filter your `raw` signal first before cutting it into epochs:
+1. **Filter Ringing and Edge Effects:**
+Digital filters need a certain amount of time (the filter length/transition bandwidth) to "settle" when they encounter a sharp boundary. When you filter a continuous Raw file, the filter settles once at the beginning of the recording. When you filter individual short epochs, the filter has to settle at the start *and* the end of *every single epoch*.
+2. **Impact on Short Epochs:**
+A 1 Hz high-pass filter has a relatively long impulse response. On a short 0.7-second epoch, these boundary artifacts can bleed deep into your time of interest (e.g., around your stimulus onset at 0.0 s).
+
+---
+
+### Recommended Pipeline (Filter Raw $\rightarrow$ Epochs)
+
+If you still have access to your Raw object, the correct approach is:
 
 ```python
 import mne
 
-# 1. Band-pass filter continuous raw data
-raw_filtered = raw.copy().filter(l_freq=1.0, h_freq=40.0)
+# 1. Load your raw data
+raw = mne.io.read_raw_fif("your_raw_file.fif", preload=True)
 
-# 2. Extract epochs from the filtered raw data
+# 2. Apply the 1-40 Hz band-pass filter on the CONTINUOUS data
+raw.filter(l_freq=1.0, h_freq=40.0, fir_design="firwin")
+
+# 3. Find events and create epochs afterwards
+events = mne.find_events(raw)
 epochs = mne.Epochs(
-    raw_filtered,
-    events=events,
-    event_id=event_dict,
-    tmin=-0.2,
-    tmax=0.5,
-    baseline=(-0.2, 0),
-    preload=True
+    raw, events, event_id=dict(target=1), tmin=-0.2, tmax=0.5, baseline=(-0.2, 0)
 )
 
 ```
 
 ---
 
-### What if you only have the `epochs` object and no `raw` data?
+### What to Do If You *Only* Have Epochs Saved
 
-If the raw continuous file is missing and you cannot re-epoch:
-
-* **High-pass filtering (1 Hz) is not recommended on 0.7 s epochs.** It is safer to rely on **baseline correction** (e.g., `epochs.apply_baseline((-0.2, 0))`) to remove DC offsets and low-frequency drift.
-* **Low-pass filtering (40 Hz) directly on epochs is acceptable** because high-frequency filters use very short filter kernels (a few milliseconds) that do not create large edge artifacts:
+If your raw data has already been discarded and you only have saved epochs, MNE does allow you to filter epochs directly using `.filter()`:
 
 ```python
-# Low-pass filter existing epochs (safely removes high-frequency noise/line noise)
-epochs.filter(l_freq=None, h_freq=40.0)
+# If you must filter epochs directly:
+epochs.filter(l_freq=1.0, h_freq=40.0, fir_design="firwin")
 
 ```
+
+**If you choose this fallback route, keep these precautions in mind:**
+
+* **Padding:** MNE-Python attempts to mitigate edge artifacts by mirroring/padding the data at the epoch boundaries during filtering, but it is still less ideal than filtering continuous data.
+* **Wider Epoch Window:** If possible in the future, extract a wider epoch window (e.g., `-0.5` to `1.0` s) during epoching, apply your filters, and then crop the epochs down to your analysis window (`-0.2` to `0.5` s) to discard the edge artifacts.
